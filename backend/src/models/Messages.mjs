@@ -18,6 +18,7 @@ const MessageSchema = new mongoose.Schema({
         default: Date.now,
         expires: '7d' 
     }
-});
+},{ timestamps: true }
+);
 
 export const Message = mongoose.model("Message", MessageSchema);

@@ -9,12 +9,17 @@ import { Server } from "socket.io";
 import { User } from './src/models/Users.mjs';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Message } from "./src/models/Messages.mjs";
-
+import { startConsumer } from "./src/kafka/consumer.mjs";
+import { createTopics } from "./src/kafka/topics.mjs";
 
 dotenv.config();
 const PORT = process.env.PORT 
 
 connectDB();
+
+createTopics().then(() => {
+  startConsumer(); 
+});
 
 const app = express();
 
@@ -55,11 +60,8 @@ const io = new Server(server, {
 });
 
 io.on('connection', (socket) => { 
-    console.log('Socket connected:', socket.id);
-
     socket.on('joinRoom', (city) => {
         socket.join(city);
-        console.log(`${socket.id} joined room: ${city}`);
     });
 
     socket.on('sendMessage', async (msgData) => {
@@ -70,14 +72,11 @@ io.on('connection', (socket) => {
         message: msgData.message,
         });
 
-        console.log("Username:", msgData.username);
-
         io.to(msgData.city).emit('receiveMessage', savedMsg);
     } catch (err) {
         console.error("Error saving message:", err.message);
     }
     });
-
 
     socket.on('disconnect', () => {
         console.log('Socket disconnected:', socket.id);
@@ -94,3 +93,5 @@ server.listen(PORT, () => {
     console.info(`[SERVER] Running on http://localhost:${PORT}`);
 
 })
+
+export default io;

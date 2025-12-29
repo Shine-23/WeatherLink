@@ -1,20 +1,34 @@
 import React, { useState, useEffect } from "react";
-import { io } from "socket.io-client";
 import axios from 'axios';
-
-const socket = io(`http://localhost:3000`); // Connect to backend
-
-const ChatRoom = ({ city, username }) => {
+import io from "socket.io-client";
+ 
+const socket = io("http://localhost:3000");
+const ChatRoom = ({ city, username, onWeatherUpdate }) => {
   const [message, setMessage] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
+  const formatTime = (date) => {
+    return new Date(date).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
   
   // Fetch previous messages when city changes
   useEffect(() => {
     if (!city) return;
-    console.log("Joining room for city:", city);
     socket.emit('joinRoom', city);
     fetchMessages(city);
   }, [city]);
+
+  useEffect(() => {
+    if (!onWeatherUpdate) return;
+    socket.on("weather-update", (data) => {
+      if (data.city.toLowerCase() === city?.toLowerCase()) {
+        onWeatherUpdate(data.weather);
+      }
+    });
+    return () => socket.off("weather-update");
+  }, [city, onWeatherUpdate]);
 
   //Fetch Messages for the city
   const fetchMessages = async (city) => { 
@@ -63,9 +77,20 @@ const ChatRoom = ({ city, username }) => {
 
       <div className="chat-box">
         {chatMessages.map((msg, index) => (
-          <div key={msg._id ?? msg.tempId ?? index} className="chat-message">
-            <strong>{msg.username}:</strong> {msg.message}
-          </div>
+          
+          <div key={msg._id ?? msg.tempId ?? index} className={`chat-message ${ msg.username === "WeatherBot" ? "bot-message" : ""}`}>
+            <div className="message-header">
+              <strong>{msg.username}</strong>
+            </div>
+            <div className={msg.username === "WeatherBot"? "bot-text-wrapper" : "message-content"}>
+              <span className={msg.username === "WeatherBot" ? "bot-text" : ""}>
+                {msg.message}
+              </span>
+            </div>
+            <div className="message-time">
+              {formatTime(msg.createdAt)}
+            </div>
+        </div>
         ))}
       </div>
 

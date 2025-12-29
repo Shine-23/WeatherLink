@@ -4,7 +4,6 @@ import axios from 'axios';
 // Register user
 export const registerUser = async (data) => {
     const res = await axios.post(`http://localhost:3000/api/auth/register`, data);
-    console.log("done")
     return res.data;
 }
 
