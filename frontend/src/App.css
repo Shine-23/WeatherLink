@@ -1,0 +1,291 @@
+/* Navbar */
+.navbar-dark {
+  background-color:  rgb(43, 153, 227) !important; /* dark glass effect */
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.navbar-brand {
+  font-weight: 600;
+  color: var(--color-text1) !important;
+}
+
+.nav-link{
+  color: var(--color-text1) !important;
+}
+
+.btn-outline-light {
+  border-color: var(--color-text1);
+  color: var(--color-text1);
+}
+
+.btn-outline-light:hover {
+  background: var(--color-text1);
+  color:  rgb(43, 153, 227);
+  border-color: var(--color-primary);
+}
+
+/* Dashboard */
+.dashboard h1 {
+  color: var(--color-primary);
+}
+
+/* Optional: Make search box input + button cohesive */
+.search-box input {
+  max-width: 400px;
+}
+
+.search-box button {
+  min-width: 70px;
+}
+
+/* Adjust row spacing for main content */
+.row.gap-4 {
+  gap: 2rem !important;
+}
+
+.search-box input.search-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Weather-card */
+.weather-card {
+  max-width: 500px;
+  width: 100%;
+  background: rgba(43, 154, 227, 0.077); /* glass effect */
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin: 1rem auto;
+  color: var(--color-text2);
+}
+
+.weather-card h2 {
+  font-weight: 600;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-primary);
+}
+
+.weather-card p {
+  margin: 0.25rem 0;
+  color: var(--color-text);
+}
+
+.weather-icon {
+  width: 100px;
+  height: 100px;
+}
+
+/* Optional: make it slightly taller for visual balance */
+.weather-card-lg {
+  padding: 2.5rem;
+}
+
+/* ChatRoom */
+.right-side{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.chat-title{
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.chat-room {
+  max-width: 450px;
+  min-height: 300px;
+  width: 100%;
+  margin: 1rem auto;
+  background: rgba(43, 154, 227, 0.077); /* glass effect */
+  border: 1px solid var(--color-primary);
+  backdrop-filter: blur(12px);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  color: var(--color-text);
+}
+
+.chat-room h2 {
+  font-weight: 600;
+  font-size: 1.3rem;
+  color: var(--color-primary);
+}
+
+.chat-box {
+  max-height: 250px;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  color: var(--color-text);
+}
+
+/* Individual message */
+.chat-message {
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.05);
+  margin-bottom: 0.3rem;
+  transition: background 0.2s ease;
+}
+
+.chat-message:hover {
+  background: rgba(79, 172, 254, 0.15);
+}
+
+/* Chat Input */
+.chat-input {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: var(--radius-md);
+  border-color: var(--color-primary);
+  padding: 0.6rem 0.8rem;
+}
+
+.chat-input input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.chat-input button {
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-md);
+}
+
+
+/* Full screen center */
+.login-container {
+    height: 100vh;
+    display: flex;
+    justify-content: flex-start; 
+    align-items: center;        
+    padding-left: 10rem;          
+    background: url('C:/Users/priya/Desktop/2024-2025/Projects/WeatherLink App/frontend/src/assets/bg.jpg') no-repeat center center;
+    background-size: 1600px 900px;
+    background-attachment: fixed;
+}
+
+/* Login card */
+.login-card {
+    background: #ffffff;
+    padding: 2.5rem;
+    width: 400px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+/* Heading */
+.login-card h2 {
+    margin-bottom: 1.5rem;
+    color: rgb(36, 155, 234);
+}
+
+/* Inputs */
+.login-card input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.login-card input:focus {
+    outline: none;
+    border-color: rgb(43, 153, 227);
+}
+
+/* Button */
+.login-card button {
+    width: 100%;
+    padding: 12px;
+    background-color: rgb(43, 153, 227);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.login-card button:hover {
+    background-color:  rgb(43, 153, 227);
+}
+
+/* Error */
+.error {
+    margin-top: 1rem;
+    color: red;
+    font-size: 14px;
+}
+
+.register-text {
+    margin-top: 1.2rem;
+    font-size: 14px;
+    color: #555;
+}
+
+.register-text span {
+    color:rgb(43, 153, 227);
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.register-text span:hover {
+    text-decoration: underline;
+}
+
+/* Divider */
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 1.2rem 0;
+    color: #999;
+    font-size: 13px;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #ddd;
+}
+
+.divider span {
+    margin: 0 10px;
+}
+
+/* Google Button */
+.google-btn {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s ease;
+}
+
+.google-btn:hover {
+    background: #f7f7f7;
+}
+
+
