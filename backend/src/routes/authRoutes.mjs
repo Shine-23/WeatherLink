@@ -6,16 +6,16 @@ import { registerUser, loginUser, googleCallback } from "../controllers/authCont
 const router = Router();
 
 //localhost:3000/api/auth/register
-router.post('/register', registerUser);
+router.post('api/auth/register', registerUser);
 
 //localhost:3000/api/auth/login
-router.post('/login', loginUser);
+router.post('/api/auth/login', loginUser);
 
-router.get('/google',
+router.get('/api/auth/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
-router.get('/google/callback',
+router.get('/api/auth/google/callback',
   passport.authenticate('google', { session: false }),
   googleCallback
 );

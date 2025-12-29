@@ -34,7 +34,6 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
     try{
         const { email, password } = req.body;
-
         if(!email || !password){
             return res.status(400).json({ message: 'Please provide all required fields' });
         }
@@ -62,15 +61,17 @@ export const loginUser = async (req, res) => {
 
 export const googleCallback = async (req, res) => {
   try {
-    const user = req.user; 
+    const user = req.user;
     const token = generateToken(user);
 
-    res.redirect(
-      `${process.env.CLIENT_URL}/oauth-success?token=${token}`
-    );
+    const redirectUrl =
+      `${process.env.CLIENT_URL}/oauth-success` +
+      `?token=${token}` +
+      `&username=${encodeURIComponent(user.username)}`;
+    res.redirect(redirectUrl);
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Google auth failed' });
+    res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_failed`);
   }
 };

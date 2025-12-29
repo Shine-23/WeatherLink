@@ -1,14 +1,16 @@
 import { Router } from "express";
 import { getWeather } from "../controllers/weatherController.mjs";
 import { protect } from "../middleware/authMiddleware.mjs";
+import { Message } from "../models/Messages.mjs"
+
 
 const router = Router();
 
 //localhost:3000/api/weather?city=Toronto
-router.get('/', protect, getWeather);
+router.get('/api/weather', protect, getWeather);
 
 //localhost:3000/api/weather/messages/:city
-router.get('/messages/:city', protect, async (req, res) => {
+router.get('/api/weather/messages/:city', protect, async (req, res) => {
     try {
         const messages = await Message.find({ city: req.params.city }).sort({ createdAt: 1 });
         res.json(messages);

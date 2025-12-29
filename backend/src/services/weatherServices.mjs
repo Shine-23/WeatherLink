@@ -1,10 +1,9 @@
 import axios from "axios";
 
-const apiKey = process.env.WEATHER_API_KEY;
-const url_city = process.env.BASE_URL_CITY;
-const url_weather = process.env.BASE_URL_WEATHER;
-
 export const getWeatherByCity = async (city) => {
+    const apiKey = process.env.WEATHER_API_KEY;
+    const url_city = process.env.BASE_URL_CITY;
+    const url_weather = process.env.BASE_URL_WEATHER;
     try{
         const cityCoordinates = await axios.get(url_city, {
             params:{

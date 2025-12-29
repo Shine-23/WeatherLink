@@ -2,6 +2,7 @@ import passport from 'passport';
 import { User } from '../models/Users.mjs';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 
+
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -26,5 +27,13 @@ passport.use(new GoogleStrategy({
     }
   }
 ));
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  done(null, id);
+});
 
 export default passport;
