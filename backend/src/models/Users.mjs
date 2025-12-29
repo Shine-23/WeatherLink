@@ -17,8 +17,15 @@ const UserSchema = new mongoose.Schema({
     },
     password: {
       type:  mongoose.Schema.Types.String,
-      required: true,
+      required: function () {
+        return !this.googleId;
+      },
       minlength: 6,
+    },
+    googleId:{
+        type: mongoose.Schema.Types.String,
+        unique: true,
+        sparse: true
     },
     createdAt: {
       type:  mongoose.Schema.Types.Date,
@@ -28,3 +35,5 @@ const UserSchema = new mongoose.Schema({
   { 
     versionKey: false 
 });
+
+export const User = mongoose.model("User", UserSchema);
