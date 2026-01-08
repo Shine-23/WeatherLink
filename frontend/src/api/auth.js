@@ -1,18 +1,16 @@
-import axios from 'axios';
+import { api } from "./client";
 
-
-// Register user
 export const registerUser = async (data) => {
-    const res = await axios.post(`http://localhost:3000/api/auth/register`, data);
-    return res.data;
-}
+  const res = await api.post("/api/auth/register", data);
+  return res.data;
+};
 
-// Login user
 export const loginUser = async (data) => {
-    const res = await axios.post(`http://localhost:3000/api/auth/login`, data);
-    return res.data;
-}
+  const res = await api.post("/api/auth/login", data);
+  return res.data;
+};
 
 export const googleLogin = () => {
-  window.location.href = `http://localhost:3000/api/auth/google`;
-};  
+  const base = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+  window.location.href = `${base}/api/auth/google`;
+};

@@ -1,22 +1,46 @@
-import React from "react";
+const WeatherCard = ({ city, weather }) => {
+  if (!weather || !city) return null;
 
-const WeatherCard = ({city, weather}) => {
-    const cityTitle = city.charAt(0).toUpperCase() + city.slice(1);
-    if(!weather) return null;
+  const cityTitle = city.charAt(0).toUpperCase() + city.slice(1);
 
-    return(
-        <div className="weather-card glass-card text-center mx-auto my-3">
-            <h2 className="mb-2">{cityTitle}</h2>
-            <img
-                src={`https://openweathermap.org/img/wn/${weather.icon}@2x.png`}
-                alt={weather.description}
-                className="weather-icon mb-2"
-            />
-            <p className="mb-1"><strong>{weather.weather}</strong> ({weather.description})</p>
-            <p className="mb-1">Temp: {weather.temperature} °C</p>
-            <p className="mb-0">Feels like: {weather.feels_like} °C</p>
-        </div>
-    );
-}
+  const {
+    icon,
+    description,
+    weather: condition,
+    temperature,
+    feelsLike,
+    feels_like, 
+  } = weather;
+
+  return (
+    <div className="weather-card glass-card text-center mx-auto my-3">
+      <h2 className="mb-2">{cityTitle}</h2>
+
+      {icon && (
+        <img
+          src={`https://openweathermap.org/img/wn/${icon}@2x.png`}
+          alt={description || condition || "Weather icon"}
+          className="weather-icon mb-2"
+        />
+      )}
+
+      {condition && description && (
+        <p className="mb-1">
+          <strong>{condition}</strong> ({description})
+        </p>
+      )}
+
+      {typeof temperature === "number" && (
+        <p className="mb-1">Temp: {temperature} °C</p>
+      )}
+
+      {(typeof feelsLike === "number" || typeof feels_like === "number") && (
+        <p className="mb-0">
+          Feels like: {feelsLike ?? feels_like} °C
+        </p>
+      )}
+    </div>
+  );
+};
 
 export default WeatherCard;

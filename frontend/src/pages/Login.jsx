@@ -1,78 +1,102 @@
-import { useState, useEffect } from 'react';
-import { loginUser, googleLogin } from '../api/auth';
-import { useNavigate } from 'react-router-dom';
-import { FcGoogle } from 'react-icons/fc';
-import '../App.css';
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { FcGoogle } from "react-icons/fc";
+
+import { loginUser, googleLogin } from "../api/auth";
+import { authStorage } from "../utils/storage";
+
+import "../App.css";
 
 function Login() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState(null);
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    // Redirect if already logged in
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            navigate('/', { replace: true });
-        }
-    }, [navigate]);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const data = await loginUser({ email, password });
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('username', data.user.username);
-            navigate('/', { replace: true });
-        } catch (err) {
-            setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
-        }
-    };
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    return (
-        <div className="login-container">
-            <div className="login-card">
-                <h2>Welcome Back!</h2>
+  
+  useEffect(() => {
+    const token = authStorage.getToken();
+    if (token) navigate("/", { replace: true });
+  }, [navigate]);
 
-                <form onSubmit={handleSubmit}>
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        required
-                    />
-                    <button type="submit">Login</button>
-                </form>
+  const from = location.state?.from?.pathname || "/";
 
-                {/* Divider */}
-                <div className="divider">
-                    <span>OR</span>
-                </div>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-                {/* Google Login */}
-                <button className="google-btn" onClick={googleLogin}>
-                    <FcGoogle size={22} />
-                    <span>Continue with Google</span>
-                </button>
+    try {
+      const data = await loginUser({ email, password });
 
-                {error && <p className="error">{error}</p>}
+      authStorage.set({
+        token: data.token,
+        username: data.user?.username,
+      });
 
-                <p className="register-text">
-                    Don’t have an account?{" "}
-                    <span onClick={() => navigate('/register')}>Register</span>
-                </p>
-            </div>
+      navigate(from, { replace: true });
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Login failed. Please check your credentials.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="login-container">
+      <div className="login-card">
+        <h2>Welcome Back!</h2>
+
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
+
+          <button type="submit" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+
+        <div className="divider">
+          <span>OR</span>
         </div>
-    );
+
+        <button className="google-btn" onClick={googleLogin} disabled={loading}>
+          <FcGoogle size={22} />
+          <span>Continue with Google</span>
+        </button>
+
+        {error && <p className="error">{error}</p>}
+
+        <p className="register-text">
+          Don’t have an account?{" "}
+          <span onClick={() => navigate("/register")}>Register</span>
+        </p>
+      </div>
+    </div>
+  );
 }
 
 export default Login;
