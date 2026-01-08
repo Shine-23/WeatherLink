@@ -1,38 +1,45 @@
-import { getWeatherByCity } from "../services/weatherServices.mjs";
 import { WeatherCache } from "../models/WeatherCache.mjs";
+import { getWeatherByCity } from "../services/weatherServices.mjs";
 import { sendWeatherUpdate } from "../kafka/producer.mjs";
+import { Message } from "../models/Messages.mjs";
 
-export const getWeather = async (req, res) => {
-  try {
-    const cityRaw = req.query.city;
-    if (!cityRaw) {
-      return res.status(400).json({ message: "City is required" });
-    }
+import { asyncHandler } from "../utils/asyncHandler.mjs";
+import { ApiError } from "../utils/apiError.mjs";
+import { normalizeCity } from "../utils/normalizeCity.mjs";
 
-    const city = cityRaw.trim().toLowerCase();
+const CACHE_EXPIRY_MINUTES = 30;
 
-    let cached = await WeatherCache.findOne({ city });
-    const now = new Date();
-    const cacheExpiryMinutes = 30;
+export const getWeather = asyncHandler(async (req, res) => {
+  const cityQuery = req.query.city;
+  const city = normalizeCity(cityQuery);
 
-    const isCacheValid =
-      cached && (now - cached.updatedAt) / 1000 / 60 < cacheExpiryMinutes;
+  if (!city) throw new ApiError(400, "City is required");
 
-    if (isCacheValid) {
-      await sendWeatherUpdate(city, cached.weather);
-      console.log(`Kafka triggered (cached) for ${city}`);
+  const cached = await WeatherCache.findOne({ city });
+  const now = Date.now();
 
-      return res.json({ city, ...cached.weather, cached: true });
-    }
+  const isCacheValid =
+    cached &&
+    (now - new Date(cached.updatedAt).getTime()) / 1000 / 60 < CACHE_EXPIRY_MINUTES;
 
-    const weatherData = await getWeatherByCity(city);
-
-    await sendWeatherUpdate(city, weatherData);
-    console.log(`Weather update sent to Kafka for ${city}`);
-
-    return res.json({ city, ...weatherData, cached: false });
-  } catch (err) {
-    console.error("getWeather error:", err);
-    return res.status(500).json({ message: "Server Error" });
+  if (isCacheValid) {
+    await sendWeatherUpdate(city, cached.weather);
+    return res.json({ city, ...cached.weather, cached: true });
   }
-};
+
+  const weatherData = await getWeatherByCity(city);
+
+  await sendWeatherUpdate(city, weatherData);
+
+  return res.json({ city, ...weatherData, cached: false });
+});
+
+export const getCityMessages = asyncHandler(async (req, res) => {
+  const cityParam = req.params.city;
+  const city = normalizeCity(cityParam);
+
+  if (!city) throw new ApiError(400, "City is required");
+
+  const messages = await Message.find({ city }).sort({ createdAt: 1 });
+  res.json(messages);
+});

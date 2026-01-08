@@ -1,34 +1,51 @@
-import { Kafka } from "kafkajs";
+import { kafka } from "./client.mjs";
+import { TOPICS } from "./topics.mjs";
+import { connectProducer, sendWeatherAlert } from "./producer.mjs";
+
 import { WeatherCache } from "../models/WeatherCache.mjs";
 import { Message } from "../models/Messages.mjs";
-import { TOPICS } from "./topics.mjs";
-import { sendWeatherAlert, connectProducer } from "./producer.mjs";
+import { normalizeCity } from "../utils/normalizeCity.mjs";
 
-const kafka = new Kafka({
-  clientId: "weather-app",
-  brokers: ["localhost:9092"],
-});
+const safeJsonParse = (buf) => {
+  try {
+    return JSON.parse(buf.toString());
+  } catch {
+    return null;
+  }
+};
 
 export const startConsumer = async (io) => {
   await connectProducer();
 
-  const consumer = kafka.consumer({ groupId: "weather-group" });
+  const consumer = kafka.consumer({
+    groupId: process.env.KAFKA_GROUP_ID || "weather-group",
+  });
+
   await consumer.connect();
 
   await consumer.subscribe({ topic: TOPICS.WEATHER_UPDATES, fromBeginning: false });
   await consumer.subscribe({ topic: TOPICS.WEATHER_ALERTS, fromBeginning: false });
 
+  console.log("[Kafka] Consumer subscribed to topics");
+
   await consumer.run({
     eachMessage: async ({ topic, message }) => {
       try {
         if (!message?.value) return;
-        const payload = JSON.parse(message.value.toString());
-  
-        if (topic === TOPICS.WEATHER_UPDATES) {
-          const data = payload;
 
-          const city = (data.city || "").trim().toLowerCase();
-          const currTemp = data?.weather?.temperature;
+        const payload = safeJsonParse(message.value);
+        if (!payload) {
+          console.warn("[Kafka] Invalid JSON payload");
+          return;
+        }
+
+        if (topic === TOPICS.WEATHER_UPDATES) {
+          const city = normalizeCity(payload.city);
+          const weather = payload.weather;
+
+          if (!city || !weather) return;
+
+          const currTemp = weather?.temperature;
 
           const prev = await WeatherCache.findOne({ city });
           const lastAlertTemp = prev?.lastAlertTemp ?? null;
@@ -39,11 +56,12 @@ export const startConsumer = async (io) => {
 
           await WeatherCache.findOneAndUpdate(
             { city },
-            { weather: data.weather, updatedAt: new Date() },
+            { weather, updatedAt: new Date() },
             { upsert: true }
           );
 
-          io.emit("weather-update", { ...data, city });
+          
+          io.to(city).emit("weather-update", { city, weather });
 
           if (shouldAlert) {
             await WeatherCache.findOneAndUpdate(
@@ -72,24 +90,24 @@ export const startConsumer = async (io) => {
           return;
         }
 
-
         if (topic === TOPICS.WEATHER_ALERTS) {
-          const alertData = payload;
-          const city = (alertData.city || "").trim().toLowerCase();
+          const city = normalizeCity(payload.city);
+          if (!city) return;
 
           const savedAlert = await Message.create({
-            username: alertData.username || "WeatherBot",
+            username: payload.username || "WeatherBot",
             city,
-            message: alertData.message,
+            message: payload.message,
           });
 
+     
           io.to(city).emit("receiveMessage", savedAlert);
-
-          return;
         }
       } catch (err) {
-        console.error("[Kafka] eachMessage error:", err);
+        console.error("[Kafka] eachMessage error:", err.message);
       }
     },
   });
+
+  return consumer; 
 };

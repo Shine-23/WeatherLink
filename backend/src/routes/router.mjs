@@ -4,7 +4,7 @@ import { Router } from "express";
 
 const router = Router();
 
-router.use(authRoutes);
-router.use(weatherRoutes);
+router.use("/auth", authRoutes);
+router.use("/weather", weatherRoutes);
 
 export default router;

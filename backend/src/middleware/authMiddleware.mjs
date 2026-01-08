@@ -1,19 +1,24 @@
 import { verifyToken } from "../utils/jwt.mjs";
+import { ApiError } from "../utils/apiError.mjs";
 
 export const protect = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+  const header = req.headers.authorization || req.headers.Authorization;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'No token provided' });
+  if (!header) return next(new ApiError(401, "Authorization header missing"));
+
+  const [scheme, token] = header.split(" ");
+
+  if (scheme !== "Bearer" || !token) {
+    return next(new ApiError(401, "Invalid authorization format"));
   }
 
-  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = verifyToken(token);
+    if (!decoded) return next(new ApiError(401, "Invalid or expired token"));
 
-  const decoded = verifyToken(token);
-  if (!decoded) {
-    return res.status(401).json({ message: 'Invalid or expired token' });
+    req.user = decoded;
+    return next();
+  } catch (err) {
+    return next(new ApiError(401, "Invalid or expired token"));
   }
-
-  req.user = decoded; 
-  next();
 };

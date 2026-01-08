@@ -1,26 +1,26 @@
-import { Kafka } from "kafkajs";
+import { kafka } from "./client.mjs";
 import { TOPICS } from "./topics.mjs";
 
-const kafka = new Kafka({
-  clientId: "weather-app",
-  brokers: ["localhost:9092"],
-});
-
 const producer = kafka.producer();
-let isConnected = false;
+let connected = false;
 
-// Connect once
 export const connectProducer = async () => {
-  if (!isConnected) {
-    await producer.connect();
-    isConnected = true;
-    console.log("[Kafka] Producer connected");
-  }
+  if (connected) return;
+  await producer.connect();
+  connected = true;
+  console.log("[Kafka] Producer connected");
 };
 
-// Generic publish function
+export const disconnectProducer = async () => {
+  if (!connected) return;
+  await producer.disconnect();
+  connected = false;
+  console.log("[Kafka] Producer disconnected");
+};
+
 export const publishEvent = async (topic, payload) => {
   await connectProducer();
+
   await producer.send({
     topic,
     messages: [
@@ -34,15 +34,8 @@ export const publishEvent = async (topic, payload) => {
   });
 };
 
-// Weather update producer
-export const sendWeatherUpdate = async (city, weather) => {
-  await publishEvent(TOPICS.WEATHER_UPDATES, {
-    city,
-    weather,
-  });
-};
+export const sendWeatherUpdate = (city, weather) =>
+  publishEvent(TOPICS.WEATHER_UPDATES, { city, weather });
 
-// Weather alert producer (used by consumer)
-export const sendWeatherAlert = async (alertData) => {
-  await publishEvent(TOPICS.WEATHER_ALERTS, alertData);
-};
+export const sendWeatherAlert = (alertData) =>
+  publishEvent(TOPICS.WEATHER_ALERTS, alertData);
