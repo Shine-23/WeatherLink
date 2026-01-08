@@ -29,7 +29,7 @@ export const getWeatherByCity = async (city) => {
         });
 
         return{
-            city: weather.data.name,
+            displayName: weather.data.name,
             weather: weather.data.weather[0].main,
             description: weather.data.weather[0].description, 
             icon: weather.data.weather[0].icon,

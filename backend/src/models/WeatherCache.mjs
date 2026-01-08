@@ -13,7 +13,9 @@ const weatherCacheSchema = new mongoose.Schema({
   updatedAt: { 
         type: Date, 
         default: Date.now 
-    }
+    },
+  lastAlertTemp: { type: Number, default: null },
+  lastAlertAt: { type: Date, default: null },
 });
 
 export const WeatherCache = mongoose.model("WeatherCache", weatherCacheSchema);
