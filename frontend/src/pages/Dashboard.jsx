@@ -10,6 +10,7 @@ const socket = io("http://localhost:3000");
 
 const Dashboard = () => {
   const [city, setCity] = useState("");
+  const [activeCity, setActiveCity] = useState("");
   const [weather, setWeather] = useState(() => {
     const saved = localStorage.getItem("weather");
     return saved ? JSON.parse(saved) : null;
@@ -17,28 +18,28 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const username = localStorage.getItem("username"); 
+  const normalizeCity = (c) => (c || "").trim().toLowerCase();
 
   useEffect(() => {
     const lastCity = localStorage.getItem("lastCity");
     if (lastCity) {
-      setCity(lastCity);
       handleSearch(lastCity);
     }
   }, []);
 
-  useEffect(() => {
-    socket.on("weather-update", (data) => {
-      if (data.city.toLowerCase() === city.toLowerCase()) {
-        console.log("Real-time weather update received:", data);
-        setWeather(data.weather);
-        localStorage.setItem("weather", JSON.stringify(data.weather));
-      }
-    });
 
-    return () => {
-      socket.off("weather-update"); // cleanup
+  useEffect(() => {
+    const handler = (data) => {
+      if (data.city?.toLowerCase() === activeCity?.toLowerCase()) {
+        const next = data.weather ?? data;
+        setWeather(next);
+        localStorage.setItem("weather", JSON.stringify(next));
+      }
     };
-  }, [city]);
+
+    socket.on("weather-update", handler);
+    return () => socket.off("weather-update", handler);
+  }, [activeCity]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -48,24 +49,28 @@ const Dashboard = () => {
 
   const handleSearch = async (searchCity) => {
     const token = localStorage.getItem("token");
-    const queryCity = searchCity || city; 
+    const queryCity = searchCity || city;
     if (!queryCity) return;
 
     setLoading(true);
     setError("");
-    try {
-      const response = await axios.get(
-        `http://localhost:3000/api/weather`,
-        {
-          params: { city: queryCity },
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setWeather(response.data);
-      localStorage.setItem("weather", JSON.stringify(response.data));
-      localStorage.setItem("lastCity", queryCity);
-      socket.emit("joinRoom", queryCity.toLowerCase());
 
+    try {
+      const response = await axios.get(`http://localhost:3000/api/weather`, {
+        params: { city: queryCity },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = response.data;
+      const cityKey = normalizeCity(data.city || queryCity);
+
+      setWeather(data);
+      setActiveCity(cityKey);
+
+      localStorage.setItem("weather", JSON.stringify(data));
+      localStorage.setItem("lastCity", cityKey);
+
+      socket.emit("joinRoom", cityKey);
     } catch (err) {
       console.error("Error fetching weather:", err);
       setError("City not found or error fetching data.");
@@ -99,7 +104,7 @@ const Dashboard = () => {
             {error && <p className="text-center text-danger">{error}</p>}
 
             <div className="d-flex justify-content-center align-items-center flex-grow-1 w-100">
-              <WeatherCard weather={weather} />
+              <WeatherCard city = {activeCity} weather={weather} />
             </div>
           </div>
 
@@ -107,7 +112,7 @@ const Dashboard = () => {
             <h1 className="chat-title mb-3 text-center w-100">City Chat Room</h1>
             <div className="d-flex justify-content-center align-items-start flex-grow-1 w-100">
               <ChatRoom 
-                city={weather?.city} 
+                city={activeCity} 
                 username={username} 
                 socket={socket} 
                 onWeatherUpdate={(updatedWeather) => {
