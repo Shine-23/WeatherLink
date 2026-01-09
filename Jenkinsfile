@@ -10,7 +10,7 @@ pipeline {
 
     stage('Create backend .env') {
       steps {
-        withCredentials([string(credentialsId: 'WEATHERLINK_ENV', variable: 'ENV_FILE')]) {
+        withCredentials([string(credentialsId: 'BACKEND_ENV', variable: 'ENV_FILE')]) {
           bat '''
             powershell -NoProfile -Command ^
               "$envContent = $env:ENV_FILE; " ^
