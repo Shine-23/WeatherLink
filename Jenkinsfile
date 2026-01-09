@@ -8,21 +8,21 @@ pipeline {
       }
     }
 
-    stage('List root directory') {
+    stage('LS (root)') {
       steps {
-        powershell 'ls'
+        sh 'pwd && ls -la'
       }
     }
 
-    stage('List frontend folder') {
+    stage('LS (frontend)') {
       steps {
-        powershell 'ls frontend'
+        sh 'ls -la frontend || true'
       }
     }
 
-    stage('List backend folder') {
+    stage('LS (backend)') {
       steps {
-        powershell 'ls backend'
+        sh 'ls -la backend || true'
       }
     }
   }
