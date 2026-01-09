@@ -5,20 +5,19 @@ import { authStorage } from "../utils/storage";
 const OAuthSuccess = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
+    useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
     const username = params.get("username");
-    const redirect = params.get("redirect") || "/";
 
-    if (!token) {
-      authStorage.clear();
+    if (token) {
+      localStorage.setItem("token", token);
+      if (username) localStorage.setItem("username", username);
+      navigate("/", { replace: true }); // prevent going back
+    } else {
       navigate("/login", { replace: true });
-      return;
-    }
 
-    authStorage.set({ token, username: username || "" });
-    navigate(redirect, { replace: true });
+    }
   }, [navigate]);
 
   return (
