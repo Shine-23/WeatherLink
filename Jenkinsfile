@@ -8,18 +8,21 @@ pipeline {
       }
     }
 
-    stage('Show folders') {
+    stage('List root directory') {
       steps {
-        bat 'dir'
-        bat 'dir backend'
-        bat 'dir frontend'
+        powershell 'ls'
       }
     }
 
-    stage('Check Node & NPM') {
+    stage('List frontend folder') {
       steps {
-        bat 'node -v'
-        bat 'npm -v'
+        powershell 'ls frontend'
+      }
+    }
+
+    stage('List backend folder') {
+      steps {
+        powershell 'ls backend'
       }
     }
   }
