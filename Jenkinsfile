@@ -1,68 +1,41 @@
 pipeline {
-  agent {
-      docker {
-          image 'node:20-bullseye'
-          args '-u root:root'
-      }
+  agent any
+  
+  tools {
+    nodejs 'node22.20'
   }
- stages {
-    stage('Checkout') {
+  
+  stages {
+    stage('git clone') {
       steps {
-        checkout scm
-        sh 'pwd && ls -la'
+        git branch: 'main', 
+            credentialsId: 'github_credentials', 
+            url: 'https://github.com/Shine-23/WeatherLink.git'
       }
     }
-
-    stage('Frontend - Install') {
-      steps {
-        sh '''
-          cd frontend
-          npm ci
-        '''
-      }
-    }
-
-    stage('Frontend - Build') {
-      steps {
-        sh '''
-          cd frontend
-          npm run build
-          ls -la
-          ls -la dist || true
-        '''
-      }
-    }
-
-    stage('Backend - Prepare public') {
-      steps {
-        sh '''
-          mkdir -p backend/public
-          rm -rf backend/public/*
-          cp -r frontend/dist/* backend/public/
-          echo "Copied frontend/dist -> backend/public"
-          ls -la backend/public
-        '''
-      }
-    }
-
-    stage('Backend - Install') {
-      steps {
-        sh '''
-          cd backend
-          npm ci
-        '''
-      }
-    }
-
-    stage('Backend - Test (optional)') {
-      steps {
-        sh '''
-          cd backend
-          if [ -f package.json ]; then
-            npm test --silent || true
-          fi
-        '''
-      }
-    }
+    stage('Frontend - Install Dependencies'){
+        steps {
+            sh '''
+                cd frontend
+                npm install
+            '''
+        }
+     }
+     stage('Frontend - Build') {
+        steps {
+            sh '''
+              cd frontend
+              npm run build
+            '''
+        }
+     }
+     stage('Backend - Install Dependencies'){
+         steps {
+             sh '''
+                cd backend
+                npm install
+             '''
+         }
+     }
   }
 }
