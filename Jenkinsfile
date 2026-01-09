@@ -8,63 +8,19 @@ pipeline {
       }
     }
 
-    stage('Create backend .env') {
+    stage('Show folders') {
       steps {
-        withCredentials([string(credentialsId: 'BACKEND_ENV', variable: 'ENV_FILE')]) {
-          bat '''
-            powershell -NoProfile -Command ^
-              "$envContent = $env:ENV_FILE; " ^
-              "Set-Content -Path backend\\.env -Value $envContent -Encoding UTF8"
-          '''
-        }
+        bat 'dir'
+        bat 'dir backend'
+        bat 'dir frontend'
       }
     }
 
-    stage('Install Backend Deps') {
+    stage('Check Node & NPM') {
       steps {
-        dir('backend') {
-          bat 'npm ci'
-        }
+        bat 'node -v'
+        bat 'npm -v'
       }
     }
-
-    stage('Install Frontend Deps') {
-      steps {
-        dir('frontend') {
-          bat 'npm ci'
-        }
-      }
-    }
-
-    stage('Build Frontend') {
-      steps {
-        dir('frontend') {
-          bat 'npm run build'
-        }
-      }
-    }
-
-    stage('Copy dist to backend') {
-      steps {
-        bat 'if exist backend\\dist rmdir /S /Q backend\\dist'
-        bat 'xcopy frontend\\dist backend\\dist /E /I /Y'
-      }
-    }
-
-    stage('Archive Build') {
-      steps {
-        archiveArtifacts artifacts: 'backend/dist/**', fingerprint: true
-      }
-    }
-
-    // Optional: sanity check start (only if your app can run in CI)
-    // stage('Start Backend Smoke Test') {
-    //   steps {
-    //     dir('backend') {
-    //       bat 'node -v'
-    //       bat 'npm start'
-    //     }
-    //   }
-    // }
   }
 }
