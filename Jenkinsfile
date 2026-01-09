@@ -29,13 +29,22 @@ pipeline {
             '''
         }
      }
-     stage('Backend - Install Dependencies'){
-         steps {
-             sh '''
-                cd backend
-                npm install
-             '''
-         }
+     stage('Copy Frontend Build to Backend') {
+      steps {
+        sh '''
+          rm -rf backend/public
+          mkdir -p backend/public
+          cp -r frontend/dist/* backend/public/
+        '''
+      }
+    }
+    stage('Backend - Install Dependencies'){
+        steps {
+            sh '''
+            cd backend
+            npm install
+        '''
+        }
      }
   }
 }
