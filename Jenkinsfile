@@ -4,6 +4,11 @@ pipeline {
   tools {
     nodejs 'node22.20'
   }
+
+  environment {
+    DOCKER_IMAGE   = 'weatherlink-jenkins-local'
+    CONTAINER_NAME = 'weatherlink-container'
+  }
   
   stages {
     stage('git clone') {
@@ -46,5 +51,20 @@ pipeline {
         '''
         }
      }
+    stage('Docker image build'){
+        steps{
+          sh 'docker build -t $DOCKER_IMAGE:$BUILD_NUMBER .'
+        }
+    }
+    stage('Docker old container remove'){
+        steps{
+          sh 'docker rm -f $CONTAINER_NAME || true'
+        }
+    }
+    stage('Docker new container run'){
+        steps{
+          sh 'docker run -d -p 5000:5000 --name=$CONTAINER_NAME $DOCKER_IMAGE:$BUILD_NUMBER'
+        }
+    }
   }
 }
