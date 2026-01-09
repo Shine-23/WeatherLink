@@ -1,14 +1,22 @@
 pipeline {
   agent any
 
-  environment {
-    PORT = "5000"
-  }
-
   stages {
     stage('Checkout') {
       steps {
         checkout scm
+      }
+    }
+
+    stage('Create backend .env') {
+      steps {
+        withCredentials([string(credentialsId: 'WEATHERLINK_ENV', variable: 'ENV_FILE')]) {
+          bat '''
+            powershell -NoProfile -Command ^
+              "$envContent = $env:ENV_FILE; " ^
+              "Set-Content -Path backend\\.env -Value $envContent -Encoding UTF8"
+          '''
+        }
       }
     }
 
@@ -38,7 +46,6 @@ pipeline {
 
     stage('Copy dist to backend') {
       steps {
-        // Windows copy
         bat 'if exist backend\\dist rmdir /S /Q backend\\dist'
         bat 'xcopy frontend\\dist backend\\dist /E /I /Y'
       }
@@ -49,5 +56,15 @@ pipeline {
         archiveArtifacts artifacts: 'backend/dist/**', fingerprint: true
       }
     }
+
+    // Optional: sanity check start (only if your app can run in CI)
+    // stage('Start Backend Smoke Test') {
+    //   steps {
+    //     dir('backend') {
+    //       bat 'node -v'
+    //       bat 'npm start'
+    //     }
+    //   }
+    // }
   }
 }
