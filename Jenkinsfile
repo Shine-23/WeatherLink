@@ -2,7 +2,7 @@ pipeline {
   agent {
       docker {
           image 'node:20-bullseye'
-          args '-u root:root''
+          args '-u root:root'
       }
   }
  stages {
